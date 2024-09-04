@@ -1,5 +1,7 @@
 # Projeto de Ciência de Dados: Identificação de Doenças Cardíacas com Machine Learning
 
+![*Heart*](https://github.com/tomnachbar/heart_disease/blob/fb706e346de9b0b41be3f139a1aa3602d7ecd20f/heart.jpeg)
+
 ## 1. Compreensão do Negócio
 
 **• Descrição do Problema:** O principal problema é a criação de um método de aprendizado de máquina que seja capaz de prever com qualidade e boa acurácia se determinado paciente terá doença cardíaca, através de entrada de dados, e que isso traduza-se em um modelo que seja aplicável e que poderão vir a ser utilizado como apoio em diagnósticos médicos.
