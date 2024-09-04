@@ -1,71 +1,75 @@
 
-
 import pandas            as pd
 import matplotlib.pyplot as plt
 import seaborn           as sns
 import sklearn           as sk
 
-caminho_do_arquivo = r'C:\Users\eliton.nachbar\Desktop\Projetos de Teste\Heart Disease\heart_disease_dataset.csv'
-
 
 # Lê o arquivo CSV
-df = pd.read_csv(caminho_do_arquivo)
+df = pd.read_csv('heart_disease_dataset.csv',low_memory=False)
 
-
+# %%
 df.columns
 
+# %% [markdown]
 # # **Análise Exploratória**
 
-
+# %%
 df.shape
 
+
+# %%
 df.describe()
 
+# %%
 df.info()
 
-
+# %%
 print(df.isnull().sum())
 
+# %%
 duplicates = df.duplicated().sum()
 print(f'Número de linhas duplicadas: {duplicates}')
 
+# %% [markdown]
 # *Verificamos que na coluna 6 - Alcohol Intake temos uma quantidade faltante de dados, então vamos explorá-la melhor a seguir*
 # 
 
-
+# %%
 for column in df.columns:
     unique_values = df[column].unique()
     print(f'Unique values in {column}: {unique_values}')
 
-
+# %%
 missing_percentage = df.isnull().mean() * 100
 print("Percentage of missing values for each column:")
 print(missing_percentage)
 
-
+# %%
 df['Alcohol Intake'].unique()
 
-
+# %% [markdown]
 # *Para sanar os dados faltantes da coluna Alcohol Intake, vamos preencher com "Light" ou "None", somente para dar tratamentos aos dados.*
 # 
 # 
 
-
+# %%
 df['Alcohol Intake'] = df['Alcohol Intake'].fillna('Light/None')
 
-
+# %%
 df.hist()
 
+# %% [markdown]
 # *É possível notar pelos histogramas acima uma boa distribuição em cada variável. Notamos ainda que temos um target que é a coluna Heart Disease*
 
-
+# %%
 print(df['Heart Disease'].value_counts())
 
 
-
+# %% [markdown]
 # **Vamos plotar um gráfico para entender melhor a coluna Heart Disease e sua distribuição**
 
-
+# %%
 # Distribuição de Heart Disease por Gênero
 plt.figure(figsize=(8, 6))
 sns.countplot(x='Gender', hue='Heart Disease', data=df, palette='Set1')
@@ -81,7 +85,7 @@ for p in plt.gca().patches:
 
 plt.show()
 
-
+# %%
 plt.figure(figsize=(12, 10))
 sns.lmplot(x='Cholesterol', y='Blood Pressure', hue='Heart Disease', data=df, fit_reg=False, scatter_kws={'alpha':0.6}, palette='flare')
 plt.title('Cholesterol vs Blood Pressure (Hued by Heart Disease)')
@@ -107,8 +111,10 @@ for col in categorical_variables:
     print(f"Mapping for {col}: {category_mapping}")
 
 
+# %% [markdown]
 # **Matriz de Correlação**
 
+# %%
 corr_matrix = df.corr()
 
 plt.figure(figsize=(12, 6))
@@ -118,159 +124,169 @@ plt.tight_layout()
 plt.show()
 
 
+# %%
 df1 = df.copy()
 
-
+# %%
 from sklearn.preprocessing import StandardScaler
 
-
+# %%
 continuous_vars = ['Age', 'Cholesterol', 'Blood Pressure', 'Heart Rate', 'Exercise Hours', 'Stress Level', 'Blood Sugar']
 
 
+# %%
 scaler = StandardScaler()
 df[continuous_vars] = scaler.fit_transform(df[continuous_vars])
 
+# %% [markdown]
 # # **Importando Modelos de Machine Learning para Teste e Treino**
 # 
 # 
 
+# %% [markdown]
 # **Logistic Regression**
 
-
+# %%
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
-
+# %%
 X = df.drop(['Heart Disease'], axis = 1)
 Y = df['Heart Disease']
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = 0.20, random_state = 42)
 
-
+# %%
 print(X.shape, X_train.shape, X_test.shape)
 
-
+# %%
 from sklearn.linear_model import LogisticRegression
 
-
+# %% [markdown]
 # **Treino**
 
-
+# %%
 log = LogisticRegression(penalty='l2',solver='lbfgs', max_iter=1000)
 log.fit(X_train, y_train)
 
-
+# %%
 y_pred = log.predict(X_train)
 train_accuracy = accuracy_score(y_pred, y_train)
 
-
+# %%
 print('Accuracy Score of Training Data:', train_accuracy)
 
-
+# %% [markdown]
 # **Teste**
 
-
+# %%
 y_pred_test = log.predict(X_test)
 test_accuracy = accuracy_score(y_test, y_pred_test)
 conf_matrix = confusion_matrix(y_test, y_pred_test)
 class_report = classification_report(y_test, y_pred_test)
 
+# %%
 print(f"Training Accuracy: {train_accuracy}")
 print(f"Testing Accuracy: {test_accuracy}")
 print("Confusion Matrix:\n", conf_matrix)
 print("Classification Report:\n", class_report)
 
-
+# %% [markdown]
 # ____________________________________________________________
 
-
+# %% [markdown]
 # **Random Forest**
 
-
+# %%
 from sklearn.ensemble import RandomForestClassifier
 
-
+# %%
 random_model = RandomForestClassifier(n_estimators=100,max_depth=5,bootstrap=True,oob_score=True, random_state=42)
 random_model.fit(X_train, y_train)
 
-
+# %% [markdown]
 # **Treino**
 
-
+# %%
 y_pred = random_model.predict(X_train)
 
+# %%
 train_accuracy = accuracy_score(y_train, y_pred)
 print(f'Acurácia no conjunto de treino: {train_accuracy:.2f}')
 
 
+# %% [markdown]
 # **Teste**
 
-
+# %%
 y_pred_test = random_model.predict(X_test)
 test_accuracy = accuracy_score(y_test, y_pred_test)
 print(f'Acurácia no conjunto de teste: {test_accuracy:.2f}')
 
-
+# %%
 conf_matrix = confusion_matrix(y_test, y_pred_test)
 print('Matriz de Confusão:')
 print(conf_matrix)
 
-
+# %%
 class_report = classification_report(y_test, y_pred_test)
 print('Relatório de Classificação:')
 print(class_report)
 
-
+# %% [markdown]
 # ____________________________________________________________
 
-
+# %% [markdown]
 # **Decision Tree Classifier**
 
-
+# %%
 from sklearn.tree import DecisionTreeClassifier
 
-
+# %% [markdown]
 # **Treino**
 
-
+# %%
 decision_model = DecisionTreeClassifier(max_depth=3, min_samples_leaf=5, min_samples_split=10, random_state=42)
 decision_model.fit(X_train, y_train)
 
-
+# %%
 y_pred = decision_model.predict(X_train)
 
-
+# %%
 train_accuracy = accuracy_score(y_pred, y_train)
 
+# %%
 print('Accuracy Score of Training Data:', train_accuracy)
 
+# %% [markdown]
 # **Teste**
 
-
+# %%
 y_pred_test = decision_model.predict(X_test)
 
-
+# %%
 test_accuracy = accuracy_score(y_test, y_pred_test)
 
-
+# %%
 print('Accuracy Score of Test Data:', test_accuracy)
 
-
+# %%
 train_accuracy = accuracy_score(y_train, y_pred)
 test_accuracy = accuracy_score(y_test, y_pred_test)
 conf_matrix = confusion_matrix(y_test, y_pred_test)
 class_report = classification_report(y_test, y_pred_test)
 
+# %%
 print(f"Random Forest - Training Accuracy: {train_accuracy}")
 print(f"Random Forest - Testing Accuracy: {test_accuracy}")
 print("Random Forest - Confusion Matrix:\n", conf_matrix)
 print("Random Forest - Classification Report:\n", class_report)
 
-
+# %%
 models = ['Logistic Regression', 'Random Forest', 'Decision Tree']
 training_accuracies = [0.86625, 1.0, 1.0]
 testing_accuracies = [0.86, 1.0, 1.0]
 
-
+# %%
 plt.figure(figsize=(10, 6))
 plt.bar(models, training_accuracies, width=0.4, align='center', label='Training Accuracy')
 plt.bar(models, testing_accuracies, width=0.4, align='edge', label='Testing Accuracy')
@@ -283,34 +299,31 @@ plt.tight_layout()
 plt.show()
 
 
-
+# %% [markdown]
 # # **Interface Preditiva com Gradio**
 
-
+# %%
 from joblib import dump
 import os
 
-# Caminho onde deseja salvar os arquivos
-save_path = 'C:/Users/eliton.nachbar/Desktop/Projetos de Teste/Heart Disease'
+# Caminho onde deseja salvar os arquivos dentro do Space
+save_path = './'  # Ou você pode usar 'models/' se preferir salvar em uma subpasta
 
 # Salvar o modelo
 dump(random_model, os.path.join(save_path, 'random_model.pkl'))
 
 # Salvar o scaler
 dump(scaler, os.path.join(save_path, 'scaler.joblib'))
+# %%
 
-
-
-df1.head(5)
-
-
+# %%
 import pandas as pd
 import gradio as gr
 from joblib import load
 import os
 
-# Caminho para o diretório onde os arquivos estão salvos
-path = 'C:/Users/eliton.nachbar/Desktop/Projetos de Teste/Heart Disease'
+# Caminho para o diretório onde os arquivos estão salvos dentro do Space
+path = './'  # Ou 'models/' se você salvou os arquivos em uma subpasta
 
 # Carregar o modelo e o scaler
 random_model = load(os.path.join(path, 'random_model.pkl'))
@@ -378,7 +391,7 @@ iface = gr.Interface(
 
 iface.launch(share=True, debug=True)
 
-
+# %%
 
 
 
